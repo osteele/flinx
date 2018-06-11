@@ -1,8 +1,14 @@
+{%- if not eject -%}
 # THIS FILE IS GENERATED AUTOMATICALLY BY FLINX. MANUAL CHANGES WILL BE LOST.
+#
 # Make changes to project.toml, and run ``flinx generate``, instead.
+{%- endif %}
 
-import os
 import sys
+{% if '.md' in source_suffix %}
+from recommonmark.parser import CommonMarkParser
+{% endif %}
+
 sys.path.insert(0, '{{ module_path }}')
 
 project = '{{ project }}'
@@ -12,29 +18,34 @@ author = '{{ author }}'
 version = '{{ version }}'
 release = '{{ version }}'
 
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.napoleon',
-              'sphinx.ext.viewcode',
-              'sphinx.ext.intersphinx']
+extensions = {{ extensions | repr }}
 
 templates_path = ['_templates']
 
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = {{ source_suffix }}
 master_doc = '{{ master_basename }}'
 language = {{ language | repr }}
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 pygments_style = 'sphinx'
 
+{% if '.md' in source_suffix %}
+source_parsers = {
+    '.md': CommonMarkParser,
+}
+{% endif %}
+
 ## HTML output options
+
 html_theme = 'alabaster'
 # html_theme_options = {}
 #html_static_path = ['_static']
 
 # HTMLHelp output options
+
 #htmlhelp_basename = '{{ project_fn }}doc'
 
 ## LaTeX output options
+
 latex_elements = {
     # 'papersize': 'letterpaper',
     # 'pointsize': '10pt',
@@ -48,12 +59,14 @@ latex_elements = {
 #]
 
 ## Manual page output options
+
 #man_pages = [
 #    (master_doc, '{{ project_manpage }}', u'{{ project_doc_str }}',
 #     [author], 1)
 #]
 
 ## Texinfo output options
+
 #texinfo_documents = [
 #    (master_doc, '{{ project_fn }}', u'{{ project_doc_str }}',
 #     author, '{{ project_fn }}', 'One line description of project.',

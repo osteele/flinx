@@ -21,21 +21,45 @@ conf_tpl = env.from_string((TEMPLATE_DIR / 'conf.py.tpl').read_text())
 index_tpl = env.from_string((TEMPLATE_DIR / 'index.rst.tpl').read_text())
 
 
-def build(output_dir):
+def read_metadata():
+    project = None
+    try:
+        project = toml.load(open('pyproject.toml'))
+        metadata = project['tool']['flit']['metadata']
+    except (FileNotFoundError, KeyError):
+        metadata = {
+            # TODO: read from directory
+            'module': 'flinx',
+            # TODO: read from ???
+            'author': 'Oliver Steele',
+            'author-email': 'steele@osteele.com',
+            # TODO: see what exists
+            'description-file': './README.rst',
+        }
+    metadata['version'] = '0.1.0'
+    return metadata
+
+
+def generate(output_dir):
     """Generate the ``conf.py`` and ``README.rst`` files."""
+    metadata = read_metadata()
     index_text = index_tpl.render(
         readme_path='README.rst',
         module_name='flinx',
     )
     (output_dir / 'index.rst').write_text(index_text)
+    copyright_year = '2018'
+    author = metadata['author']
     conf_text = conf_tpl.render(
         module_path='..',
-        project='flinx',
-        copyright='2018, Oliver Steele',
-        author='Oliver Steele',
-        version='0.1.0',
+        project=metadata['module'],
+        copyright=f'{copyright_year}, {author}',
+        author=author,
+        version=metadata['version'],
         language='en',
-        extensions=['sphinx.ext.intersphinx'],
+        # TODO: options for autodoc
+        extensions=['sphinx.ext.autodoc', 'sphinx.ext.intersphinx'],
+        source_suffix=['.rst'],
         master_basename='index',
     )
     conf_path = output_dir / 'conf.py'
@@ -48,7 +72,7 @@ def main():
     docs_dir = Path('./docs')
     build_dir = docs_dir / '_build'
     docs_dir.mkdir(exist_ok=True)
-    conf_path = build(docs_dir)
+    conf_path = generate(docs_dir)
     status = sphinx([
         '-a',  # always build
         '-c', str(conf_path.parent),  # config file
