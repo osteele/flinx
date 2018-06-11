@@ -4,6 +4,7 @@ import sys
 import webbrowser
 from pathlib import Path
 
+import click
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 import pytoml as toml
@@ -40,8 +41,9 @@ def read_metadata():
     return metadata
 
 
-def generate(output_dir):
+def write_template_files(output_dir):
     """Generate the ``conf.py`` and ``README.rst`` files."""
+    # TODO: refuse to overwrite non-generated ones
     metadata = read_metadata()
     index_text = index_tpl.render(
         readme_path='README.rst',
@@ -67,23 +69,46 @@ def generate(output_dir):
     return conf_path
 
 
+@click.group()
 def main():
+    pass
+
+
+@main.command()
+def generate():
+    docs_dir = Path('./docs')
+    write_template_files(docs_dir)
+
+
+@main.command()
+@click.option('-a', '--all', is_flag=True,
+              help='Rebuild all the docs, regardless of what has changed.')
+@click.option('-o', '--open', is_flag=True,
+              help='Open the HTML index in a browser.')
+@click.option('--format', default='html',
+              type=click.Choice(['html']),
+              help='The output format.')
+def build(all=False, format='html', open=False):
     """Build the documentation."""
     docs_dir = Path('./docs')
-    build_dir = docs_dir / '_build'
+    build_dir = docs_dir / '_build' / format
     docs_dir.mkdir(exist_ok=True)
-    conf_path = generate(docs_dir)
-    status = sphinx([
-        '-a',  # always build
+    conf_path = write_template_files(docs_dir)
+    args = [
+        '-b', format,
         '-c', str(conf_path.parent),  # config file
         '-j', 'auto',  # processors
         '-q',  # quiet
         str(docs_dir),
         str(build_dir)
-    ])
+    ]
+    if all:
+        args += ['-a']
+    status = sphinx(args)
     if status:
         sys.exit(sys.exit)
-    webbrowser.open(str(build_dir / 'index.html'))
+    if open and format == 'html':
+        webbrowser.open(str(build_dir / 'index.html'))
 
 
 if __name__ == '__main__':

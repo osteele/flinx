@@ -1,6 +1,9 @@
 Flinx
 =====
 
+.. warning::
+  Work in progress. Don't use yet!
+
 Configuration-free Sphinx package documentation.
 
 Flinx aims to be for documentation as Flit is for packaging.
