@@ -41,13 +41,18 @@ def read_metadata():
     return metadata
 
 
-def write_template_files(output_dir):
+GENERATED_TEXT = "THIS FILE IS GENERATED AUTOMATICALLY BY FLINX. MANUAL CHANGES WILL BE LOST."
+
+
+def write_template_files(output_dir, generated=True):
     """Generate the ``conf.py`` and ``README.rst`` files."""
     # TODO: refuse to overwrite non-generated ones
     metadata = read_metadata()
+    generated_text = GENERATED_TEXT if generated else None
     index_text = index_tpl.render(
         readme_path='README.rst',
         module_name='flinx',
+        generated_text=generated_text,
     )
     (output_dir / 'index.rst').write_text(index_text)
     copyright_year = '2018'
@@ -63,6 +68,7 @@ def write_template_files(output_dir):
         extensions=['sphinx.ext.autodoc', 'sphinx.ext.intersphinx'],
         source_suffix=['.rst'],
         master_basename='index',
+        generated_text=generated_text,
     )
     conf_path = output_dir / 'conf.py'
     conf_path.write_text(conf_text)
@@ -78,6 +84,12 @@ def main():
 def generate():
     docs_dir = Path('./docs')
     write_template_files(docs_dir)
+
+
+@main.command()
+def eject():
+    docs_dir = Path('./docs')
+    write_template_files(docs_dir, generated=False)
 
 
 @main.command()

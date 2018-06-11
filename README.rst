@@ -45,10 +45,12 @@ Usage
 TODO: ``flinx watch`` runs via autosphinx. With ``-o`` or ``--open``, opens the
 documentation in a browser.
 
-TODO: ``flinx generate`` writes ``docs/conf.py`` and ``docs/index.rst``, that match the
-current project settings. It will balk if these files already exist.
+``flinx generate`` writes ``docs/conf.py`` and ``docs/index.rst``, that match
+the current project settings. TODO: It will balk if these files already exist.
 
-Use this to "eject" flinx.
+``flinx eject`` is equivalent to ``flinx generate``, except that the files omit
+the "THIS FILE IS GENERATED AUTOMATICALLY BY FLINX. MANUAL CHANGES WILL BE LOST"
+warning in the header.
 
 TODO: ``flinx generate --force`` overwrites existing files.
 
