@@ -2,7 +2,7 @@ Flinx
 =====
 
 .. warning::
-  Work in progress. Don't use yet!
+  Work in progress. Don't use me yet!
 
 Configuration-free Sphinx package documentation.
 
@@ -17,7 +17,7 @@ Signs you might be interested in this package:
 * You're tired of manually editing both your module source, and `conf.py`, when
   you bump the version number. (Although `bumpversion
   <https://github.com/peritus/bumpversion>`_ is an alternative, here.)
-* You're okay trying early-stage software.
+* You're an eager guinea pig for early-stage software.
 
 Signs you won't be interested in (and will probably dislike) this package:
 
@@ -59,19 +59,25 @@ it uses `pipenv install --dev` to install them. ``flinx install -r`` adds them
 to ``requirements.txt``. ``flinx install -rdev-requirements.txt`` adds them to
 ``dev-requirements.txt``.
 
-Benefits
---------
-
-Doesn't require any configuration files. Always uses the current package name
-and version. TODO: Autodiscover and markdown by default.
+.. note:
+  These command-line options are pretty different from ``sphinx-build`` and
+  ``sphinx-autobuild``. This falls under the heading of “if you're happy with
+  those tools and know your way around their options, you probably won't like
+  this package”. They're designed to be more like *other* site generators that I
+  use, such as Jekyll. Since I *don't* know my way around ``sphinx-build``, I'm
+  not trying to be compatible with it.
 
 Configuration
 -------------
 
-With no ``pyproject.toml``: documents all the non-test \*.py files, and directories that contain an ``__init__.py``.
+When a ``pyproject.toml`` file is present, the module name, author, and
+description file are read from its ``[tool.flit.metadata]`` section.
 
-TBD. Basically, this will be adding sections to ``pyproject.toml``, but maybe
-they should go in ``setup.cfg`` instead.
+TODO: Otherwise: this documents all the non-test \*.py files, and directories
+that contain an ``__init__.py``.
+
+TODO: Configure Sphinx options,by adding sections to ``pyproject.toml``. (Maybe
+they should go in ``setup.cfg`` instead.)
 
 Limitations
 -----------
@@ -86,6 +92,17 @@ Acknowledements
 Inspired by `flit <https://flit.readthedocs.io/en/latest/>`. Built on `sphinx
 <http://www.sphinx-doc.org/en/master/>`_ and `sphinx-autobuild
 <https://github.com/GaretJax/sphinx-autobuild>`_.
+
+About the Name
+--------------
+
+“Flinx” is a mash-up of “flit” and “sphinx”. I wanted to name it “flynx”, as a
+tribute to _Seveneves_, but then I realized I'd been spelling “sphinx” wrong.
+There's an app named “Flynx” and nothing named “flinx”, so it's probably just as
+well.
+
+“Flinx” is also a character in an Allen Dean Foster series. I regret to admit
+that I haven't read that series, and that it didn't inform my choice of names.
 
 License
 -------

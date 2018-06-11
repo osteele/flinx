@@ -7,10 +7,12 @@ from pathlib import Path
 import click
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-import pytoml as toml
+from project_metadata import MetadataConfig
 from sphinx.cmd.build import main as sphinx
 
 __version__ = '0.1.0'
+
+GENERATED_TEXT = "THIS FILE IS GENERATED AUTOMATICALLY BY FLINX. MANUAL CHANGES WILL BE LOST."
 
 env = Environment()
 env.filters['repr'] = repr
@@ -22,36 +24,14 @@ conf_tpl = env.from_string((TEMPLATE_DIR / 'conf.py.tpl').read_text())
 index_tpl = env.from_string((TEMPLATE_DIR / 'index.rst.tpl').read_text())
 
 
-def read_metadata():
-    project = None
-    try:
-        project = toml.load(open('pyproject.toml'))
-        metadata = project['tool']['flit']['metadata']
-    except (FileNotFoundError, KeyError):
-        metadata = {
-            # TODO: read from directory
-            'module': 'flinx',
-            # TODO: read from ???
-            'author': 'Oliver Steele',
-            'author-email': 'steele@osteele.com',
-            # TODO: see what exists
-            'description-file': './README.rst',
-        }
-    metadata['version'] = '0.1.0'
-    return metadata
-
-
-GENERATED_TEXT = "THIS FILE IS GENERATED AUTOMATICALLY BY FLINX. MANUAL CHANGES WILL BE LOST."
-
-
 def write_template_files(output_dir, generated=True):
     """Generate the ``conf.py`` and ``README.rst`` files."""
     # TODO: refuse to overwrite non-generated ones
-    metadata = read_metadata()
+    metadata = MetadataConfig()
     generated_text = GENERATED_TEXT if generated else None
     index_text = index_tpl.render(
-        readme_path='README.rst',
-        module_name='flinx',
+        readme=metadata['readme'],
+        module_name=metadata['module'],
         generated_text=generated_text,
     )
     (output_dir / 'index.rst').write_text(index_text)

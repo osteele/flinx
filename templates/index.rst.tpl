@@ -5,7 +5,9 @@
 
 {% endif -%}
 
-.. include:: {{ readme_path | project_rel }}
+{% if readme %}
+.. include:: {{ readme | project_rel }}
+{% endif -%}
 
 .. toctree::
    :maxdepth: 2
