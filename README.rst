@@ -18,7 +18,7 @@ those commands directly, you don't need this one.
 Signs you might be interested in this package:
 
 * You want zero-configuration documentation for new projects.
-* You don't want to edit both your module source, and ```conf.py``, when
+* You don't want to edit both your module source and ``conf.py``, when
   you rename your module. (I know, you shouldn't do this after you've published.
   But I do this a lot during initial development.)
 * You don't want to manually edit both your module source, and ``conf.py``,
@@ -44,10 +44,11 @@ Builds the HTML documentation.
 
 ``flinx --open`` opens a browser onto the documentation once it's been built.
 
-TODO: ``flinx watch`` runs via autosphinx. With ``-o`` or ``--open``, opens the
-documentation in a browser.
+.. todo::
+   ``flinx watch`` runs via autosphinx. With ``-o`` or ``--open``, opens the
+   documentation in a browser.
 
-TODO: currently this pollutes ``./docs``.
+.. todo:: Currently this pollutes ``./docs``.
 
 ::
 
@@ -93,7 +94,9 @@ Configure `Sphinx options`_ by adding sections to ``pyproject.toml``. For exampl
   [tool.flinx]
   html_theme = 'sphinx_rtd_theme'
 
-TODO: Maybe these should go in ``setup.cfg`` instead.
+.. todo::
+
+   Maybe these should go in ``setup.cfg`` instead.
 
 .. _pyproject.toml: https://www.python.org/dev/peps/pep-0518/
 .. _Flit: https://flit.readthedocs.io/en/latest/
@@ -107,8 +110,8 @@ Flinx doesn't currently allow Spinx customization. This is coming next.
 
 Flinx isn't compatible with Read the Docs. This is planned, but tricky.
 
-Acknowledements
----------------
+Acknowledgements
+-----------------
 
 Inspired by `flit <https://flit.readthedocs.io/en/latest/>`_. Built on `sphinx
 <http://www.sphinx-doc.org/en/master/>`_ and `sphinx-autobuild

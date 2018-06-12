@@ -23,20 +23,13 @@ author = '{{ author }}'
 version = '{{ version }}'
 release = '{{ version }}'
 
-extensions = {{ extensions | repr }}
-
-templates_path = ['_templates']
-
-source_suffix = {{ source_suffix }}
 master_doc = '{{ master_basename }}'
-language = {{ language | repr }}
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-pygments_style = 'sphinx'
+extensions = {{ extensions | repr }}
+source_suffix = {{ source_suffix }}
 
 {% if '.md' in source_suffix %}
-source_parsers = {
-    '.md': CommonMarkParser,
-}
+source_parsers = { '.md': CommonMarkParser }
 {% endif %}
 
 {%- if 'sphinx.ext.intersphinx' in extensions %}

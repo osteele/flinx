@@ -2,8 +2,9 @@
 requires = ["flit"]
 build-backend = "flit.buildapi"
 
-[tool.flinx]
+[tool.flinx.settings]
 html_theme = 'sphinx_rtd_theme'
+todo_include_todos = true
 
 [tool.flit.metadata]
 module = "flinx"

@@ -2,11 +2,13 @@
 
 import sys
 import webbrowser
+from functools import reduce
 from pathlib import Path
 
 import click
 from jinja2 import Environment
 
+import pytoml as toml
 from project_metadata import ProjectMetadata
 from sphinx.cmd.build import main as sphinx
 
@@ -19,7 +21,6 @@ env = Environment()
 env.filters['repr'] = repr
 poject_relpath = Path('..')
 env.filters['project_rel'] = lambda s: str(poject_relpath / s)
-import pytoml as toml
 
 TEMPLATE_DIR = Path('templates')
 conf_tpl = env.from_string((TEMPLATE_DIR / 'conf.py.tpl').read_text())
@@ -50,9 +51,7 @@ def write_template_files(output_dir, include_generated_warning=True, verbose=Tru
         copyright=f'{copyright_year}, {author}',
         author=author,
         version=metadata['version'],
-        language='en',
-        # TODO: options for autodoc
-        extensions=['sphinx.ext.autodoc', 'sphinx.ext.intersphinx'],
+        extensions=['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.todo'],
         source_suffix=['.rst'],
         master_basename='index',
         generated_text=generated_text,
@@ -65,13 +64,10 @@ def write_template_files(output_dir, include_generated_warning=True, verbose=Tru
     return conf_path
 
 
-from functools import reduce
-
-
 def read_project_data(project_dir):
     try:
         project = toml.loads(Path('pyproject.toml').read_text())
-        return reduce(lambda a, b: a[b], 'tool.flinx'.split('.'), project)
+        return reduce(lambda a, b: a[b], 'tool.flinx.settings'.split('.'), project)
     except FileNotFoundError:
         return {}
 
