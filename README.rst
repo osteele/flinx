@@ -1,12 +1,15 @@
 Flinx
 =====
 
+Configuration-free Sphinx package documentation.
+
 .. warning::
    Work in progress. Beware!
 
-Configuration-free Sphinx package documentation.
-
-Flinx aims to be for documentation as Flit is for packaging.
+Flinx aims to be for documentation what Flit is for packaging: a
+configuration-free way to get started on {documentation, packaging}, and add
+configuration gradually. It also borrows a concept from react-starter-kit: you
+can “eject”, and leave Flinx behind.
 
 Signs you might be interested in this package:
 
@@ -38,21 +41,34 @@ Installation
 Usage
 -----
 
-``flinx`` or ``flinx build`` builds the HTML documentation.
+::
 
-``flinx --open`` opens a browser onto the documentation once it's built.
+  $ flinx build
+
+Builds the HTML documentation.
+
+``flinx --open`` opens a browser onto the documentation once it's been built.
 
 TODO: ``flinx watch`` runs via autosphinx. With ``-o`` or ``--open``, opens the
 documentation in a browser.
 
-``flinx generate`` writes ``docs/conf.py`` and ``docs/index.rst``, that match
-the current project settings. TODO: It will balk if these files already exist.
+TODO: currently this pollutes ``./docs``.
 
-``flinx eject`` is equivalent to ``flinx generate``, except that the files omit
-the "THIS FILE IS GENERATED AUTOMATICALLY BY FLINX. MANUAL CHANGES WILL BE LOST"
-warning in the header.
+::
+
+  $ flinx generate
+
+Writes ``docs/conf.py`` and ``docs/index.rst``, that match the current project
+settings. TODO: It will balk if these files already exist.
 
 TODO: ``flinx generate --force`` overwrites existing files.
+
+::
+
+  $ flinx eject
+
+This is equivalent to ``flinx generate``, except that the files omit the "THIS
+FILE IS AUTOMATICALLY GENERATED" warning in the header.
 
 TODO: ``flinx install`` installs required extensions. If a `Pipfile` exists,
 it uses `pipenv install --dev` to install them. ``flinx install -r`` adds them
@@ -86,9 +102,9 @@ they should go in ``setup.cfg`` instead.)
 Limitations
 -----------
 
-Doesn't allow Spinx customization.
+Flinx doesn't currently allow Spinx customization. This is coming next.
 
-Isn't compatible with Read the Docs. (Planned, but tricky.)
+Flinx isn't compatible with Read the Docs. This is planned, but tricky.
 
 Acknowledements
 ---------------
