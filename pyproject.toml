@@ -2,6 +2,9 @@
 requires = ["flit"]
 build-backend = "flit.buildapi"
 
+[tool.flinx]
+html_theme = 'sphinx_rtd_theme'
+
 [tool.flit.metadata]
 module = "flinx"
 author = "Oliver Steele"

@@ -19,24 +19,30 @@ env = Environment()
 env.filters['repr'] = repr
 poject_relpath = Path('..')
 env.filters['project_rel'] = lambda s: str(poject_relpath / s)
+import pytoml as toml
 
 TEMPLATE_DIR = Path('templates')
 conf_tpl = env.from_string((TEMPLATE_DIR / 'conf.py.tpl').read_text())
 index_tpl = env.from_string((TEMPLATE_DIR / 'index.rst.tpl').read_text())
 
 
-def write_template_files(output_dir, generated=True):
+def write_template_files(output_dir, include_generated_warning=True, verbose=True):
     """Generate the ``conf.py`` and ``README.rst`` files."""
-    # TODO: refuse to overwrite non-generated ones
+    # TODO: refuse to overwrite non-generated files?
     metadata = ProjectMetadata.from_dir('.')
-    generated_text = GENERATED_TEXT if generated else None
+    config_vars = read_project_data('.')
+    generated_text = GENERATED_TEXT if include_generated_warning else None
     index_text = index_tpl.render(
         readme=metadata['readme'],
         module_name=metadata['module'],
         generated_text=generated_text,
     )
-    (output_dir / 'index.rst').write_text(index_text)
-    copyright_year = '2018'
+    index_path = output_dir / 'index.rst'
+    index_path.write_text(index_text)
+    if verbose:
+        print('wrote', index_path)
+
+    copyright_year = '2018'  # FIXME:
     author = metadata['author']
     conf_text = conf_tpl.render(
         module_path='..',
@@ -50,10 +56,24 @@ def write_template_files(output_dir, generated=True):
         source_suffix=['.rst'],
         master_basename='index',
         generated_text=generated_text,
+        config_vars=config_vars.items(),
     )
     conf_path = output_dir / 'conf.py'
     conf_path.write_text(conf_text)
+    if verbose:
+        print('wrote', conf_path)
     return conf_path
+
+
+from functools import reduce
+
+
+def read_project_data(project_dir):
+    try:
+        project = toml.loads(Path('pyproject.toml').read_text())
+        return reduce(lambda a, b: a[b], 'tool.flinx'.split('.'), project)
+    except FileNotFoundError:
+        return {}
 
 
 @click.group()
@@ -70,7 +90,7 @@ def generate():
 @main.command()
 def eject():
     docs_dir = Path('./docs')
-    write_template_files(docs_dir, generated=False)
+    write_template_files(docs_dir, include_generated_warning=False)
 
 
 @main.command()

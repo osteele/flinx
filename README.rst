@@ -11,25 +11,20 @@ configuration-free way to get started on {documentation, packaging}, and add
 configuration gradually. It also borrows a concept from react-starter-kit: you
 can “eject”, and leave Flinx behind.
 
+This tool isn't for everyone. Flinx is a thin wrapper around ``sphinx-build``
+and ``sphinx-autobuild``. If you're happy creating a ``docs/conf.py`` and using
+those commands directly, you don't need this one.
+
 Signs you might be interested in this package:
 
 * You want zero-configuration documentation for new projects.
-* You're tired of manually editing both your module source, and ```conf.py``, when
+* You don't want to edit both your module source, and ```conf.py``, when
   you rename your module. (I know, you shouldn't do this after you've published.
   But I do this a lot during initial development.)
-* You're tired of manually editing both your module source, and ``conf.py``,
+* You don't want to manually edit both your module source, and ``conf.py``,
   when you bump the version number. (Although `bumpversion
   <https://github.com/peritus/bumpversion>`_ is an alternative, here.)
 * You're an eager guinea pig for early-stage software.
-
-Signs you won't be interested in (and will probably dislike) this package:
-
-* You're happy using ``sphinx-quickstart`` to create ``docs/conf.py`` and
-  ``docs/Makefile``
-* You know your way around Sphinx ``conf.py``, ``sphinx-build``, and
-  ``sphinx--autobuild``.
-* In general, the standard Sphinx tooling works just fine for you.
-* You don't want to try early-stage software.
 
 Installation
 ------------
@@ -59,9 +54,7 @@ TODO: currently this pollutes ``./docs``.
   $ flinx generate
 
 Writes ``docs/conf.py`` and ``docs/index.rst``, that match the current project
-settings. TODO: It will balk if these files already exist.
-
-TODO: ``flinx generate --force`` overwrites existing files.
+settings.
 
 ::
 
@@ -69,11 +62,6 @@ TODO: ``flinx generate --force`` overwrites existing files.
 
 This is equivalent to ``flinx generate``, except that the files omit the "THIS
 FILE IS AUTOMATICALLY GENERATED" warning in the header.
-
-TODO: ``flinx install`` installs required extensions. If a `Pipfile` exists,
-it uses ``pipenv install --dev`` to install them. ``flinx install -r`` adds them
-to ``requirements.txt``. ``flinx install -rdev-requirements.txt`` adds them to
-``dev-requirements.txt``.
 
 .. note::
    These command-line options are pretty different from ``sphinx-build`` and
@@ -98,12 +86,19 @@ definition, else it's the first non-test \*.py file that contains a version
 definition. A version definition is a line of the format ``__version__ =
 "1.2.3"``, with single or double quotes.
 
-TODO: Configure Sphinx options,by adding sections to ``pyproject.toml``. (Maybe
-they should go in ``setup.cfg`` instead.)
+Configure `Sphinx options`_ by adding sections to ``pyproject.toml``. For example:
+
+::
+
+  [tool.flinx]
+  html_theme = 'sphinx_rtd_theme'
+
+TODO: Maybe these should go in ``setup.cfg`` instead.
 
 .. _pyproject.toml: https://www.python.org/dev/peps/pep-0518/
 .. _Flit: https://flit.readthedocs.io/en/latest/
 .. _Poetry: https://poetry.eustace.io
+.. _Sphinx options: http://www.sphinx-doc.org/en/master/usage/configuration.html
 
 Limitations
 -----------

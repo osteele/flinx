@@ -1,7 +1,7 @@
 {%- if generated_text -%}
-# {{ generated_text }}
-#
-# Make changes to ``project.toml``, and run ``flinx generate``, instead.
+.. {{ generated_text }}
+
+   Make changes to ``project.toml``, and run ``flinx generate``, instead.
 
 {% endif -%}
 
