@@ -1,6 +1,7 @@
 import re
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import pytoml as toml
@@ -41,7 +42,7 @@ class ProjectMetadata(object):
         return KeyError(key)
 
 
-class PyProjectMetadataProvider(object):
+class PyProjectMetadataProviderABC(object):
     _metadata = dict()
     _translations = {}
 
@@ -65,7 +66,7 @@ class PyProjectMetadataProvider(object):
         return self._metadata[key]
 
 
-class FlitMetadata(PyProjectMetadataProvider):
+class FlitMetadata(PyProjectMetadataProviderABC):
     """Metadata provider that reads the Flit data from ``pyproject.toml``."""
 
     _toml_path = 'tool.flit.metadata'
@@ -75,12 +76,17 @@ class FlitMetadata(PyProjectMetadataProvider):
     }
 
 
-class PoetryMetadata(PyProjectMetadataProvider):
+class PoetryMetadata(PyProjectMetadataProviderABC):
     _toml_path = 'tool.poetry'
 
     def author(self):
         authors = self['authors']
-        return (authors[0] + '<').split('<')[0] if authors else None
+        if not authors:
+            raise KeyError('author')
+        authors = [(author + '<').split('<')[0].strip() for author in authors]
+        if len(authors) > 1:
+            authors[-1] = 'and ' + authors[-1]
+        return (', ' if len(authors) > 2 else ' ').join(authors)
 
 
 def read_version_def(path):
@@ -144,6 +150,9 @@ class DetectedMetadata(object):
         if not process.stdout:
             raise Exception("Couldn't detect user name")
         return process.stdout.decode().strip()
+
+    def date(self):
+        return datetime.now().strftime('%Y')
 
     def readme(self):
         for filename in ['README.rst', 'README.md']:

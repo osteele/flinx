@@ -57,7 +57,7 @@ def write_template_files(output_dir, include_generated_warning=True, verbose=Tru
         print('wrote', index_path)
 
     author = metadata['author']
-    copyright_year = '2018'  # TODO:
+    copyright_year = metadata['date']
     config['extensions'] = get_extensions(config)
     conf_text = conf_tpl.render(
         module_path='..',

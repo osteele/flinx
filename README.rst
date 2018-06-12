@@ -84,11 +84,12 @@ FILE IS AUTOMATICALLY GENERATED" warning in the header.
 Configuration
 -------------
 
-If pyproject.toml_ exists and contains a Flit_ table ``[tool.flit.metadata]``,
-the project name, author, and description file are read from that.
+If pyproject.toml_ exists and contains a ``[tool.flit.metadata]`` Flit_
+configuration table, the project name, author, and description file are read
+from that.
 
-If ``pyproject.toml`` contains a Poetry_ table ``[tool.poetry]``, the project
-name, author, and version are read from that.
+If ``pyproject.toml`` contains a ``[tool.poetry]`` Poetry_ configuration table,
+the project name, author, and version are read from that.
 
 Otherwise, Flinx attempts to detect the module. This is the first non-test
 directory that contains an ``__init__.py`` file that contains a version
@@ -97,7 +98,7 @@ definition. A version definition is a line of the format ``__version__ =
 "1.2.3"``, with single or double quotes. (Flinx ignores whitespace, but does not
 import or parse the file.)
 
-Add `Sphinx configuration`_ variables to a ``[tool.flinx.settings]`` table
+Add `Sphinx configuration`_ variables to a ``[tool.flinx.configuration]`` table
 in ``pyproject.toml``. For example:
 
 ::
@@ -121,8 +122,6 @@ the presence of ``todo_include_todos = true`` in the project file implies
 
 Limitations
 -----------
-
-Flinx doesn't currently allow Spinx customization. This is coming next.
 
 Flinx isn't compatible with Read the Docs. This is planned, but tricky.
 
