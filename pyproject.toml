@@ -19,6 +19,7 @@ classifiers = [
     ]
 description-file = "./README.rst"
 requires = ["click", "flit" , "Sphinx"]
+# It's probably compatible with 3.0–3.4 too. I haven't tested it.
 requires-python = ">=3.5"
 
 [tool.flit.scripts]
@@ -26,3 +27,10 @@ flinx = "flinx:main"
 
 [tool.flit.metadata.urls]
 Documentation = "https://flinx.readthedocs.io/en/latest/"
+
+[tool.poetry]
+name = "flinx"
+authors = ["Oliver Steele <steele@osteele.com>"]
+# The following is just for test purposes. I'm not trying to keep the version
+# here in sync with the version in the Python sources.
+version = "0.1.0"

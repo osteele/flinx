@@ -7,7 +7,7 @@ from pathlib import Path
 import click
 from jinja2 import Environment
 
-from project_metadata import MetadataConfig
+from project_metadata import ProjectMetadata
 from sphinx.cmd.build import main as sphinx
 
 __version__ = '0.1.1'
@@ -28,7 +28,7 @@ index_tpl = env.from_string((TEMPLATE_DIR / 'index.rst.tpl').read_text())
 def write_template_files(output_dir, generated=True):
     """Generate the ``conf.py`` and ``README.rst`` files."""
     # TODO: refuse to overwrite non-generated ones
-    metadata = MetadataConfig()
+    metadata = ProjectMetadata.from_dir('.')
     generated_text = GENERATED_TEXT if generated else None
     index_text = index_tpl.render(
         readme=metadata['readme'],

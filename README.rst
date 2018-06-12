@@ -71,7 +71,7 @@ This is equivalent to ``flinx generate``, except that the files omit the "THIS
 FILE IS AUTOMATICALLY GENERATED" warning in the header.
 
 TODO: ``flinx install`` installs required extensions. If a `Pipfile` exists,
-it uses `pipenv install --dev` to install them. ``flinx install -r`` adds them
+it uses ``pipenv install --dev`` to install them. ``flinx install -r`` adds them
 to ``requirements.txt``. ``flinx install -rdev-requirements.txt`` adds them to
 ``dev-requirements.txt``.
 
@@ -86,9 +86,11 @@ to ``requirements.txt``. ``flinx install -rdev-requirements.txt`` adds them to
 Configuration
 -------------
 
-When a `pyproject.toml <https://www.python.org/dev/peps/pep-0518/>`_ file is
-present, the module name, author, and description file are read from its
-``[tool.flit.metadata]`` section.
+If pyproject.toml_ exists and has a Flit_ section ``[tool.flit.metadata]``, the
+project name, author, and description file are read from that.
+
+If ``pyproject.toml`` has a Poetry_ section ``[tool.poetry]``, the project name,
+author, and version are read from that.
 
 Otherwise, it attempts to detect the module. This is the first non-test
 directory that contains an ``__init__.py`` file that contains a version
@@ -98,6 +100,10 @@ definition. A version definition is a line of the format ``__version__ =
 
 TODO: Configure Sphinx options,by adding sections to ``pyproject.toml``. (Maybe
 they should go in ``setup.cfg`` instead.)
+
+.. _pyproject.toml: https://www.python.org/dev/peps/pep-0518/
+.. _Flit: https://flit.readthedocs.io/en/latest/
+.. _Poetry: https://poetry.eustace.io
 
 Limitations
 -----------
