@@ -5,14 +5,15 @@ import webbrowser
 from pathlib import Path
 
 import click
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import Environment
 
 from project_metadata import MetadataConfig
 from sphinx.cmd.build import main as sphinx
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
-GENERATED_TEXT = "THIS FILE IS GENERATED AUTOMATICALLY BY FLINX. MANUAL CHANGES WILL BE LOST."
+GENERATED_TEXT = "THIS FILE IS GENERATED AUTOMATICALLY BY FLINX. "
+"MANUAL CHANGES WILL BE LOST."
 
 env = Environment()
 env.filters['repr'] = repr

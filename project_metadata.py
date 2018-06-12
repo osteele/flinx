@@ -1,5 +1,7 @@
-from pathlib import Path
 import re
+import subprocess
+import sys
+from pathlib import Path
 
 import pytoml as toml
 
@@ -49,13 +51,20 @@ def find_module():
     return module_paths[0]
 
 
-class ComputedMetadata(object):
+class DetectedMetadata(object):
+    """Metadata provider that detects metadata from files in the current directory."""
+
     def module(self):
         return str(find_module())
 
     def author(self):
-        # TODO: git config, if present
-        return 'Oliver Steele'
+        process = subprocess.run(["git", "config", "user.name"],
+                                 stdout=subprocess.PIPE)
+        if process.returncode:
+            sys.exit(1)
+        if not process.stdout:
+            raise Exception("Couldn't detect user name")
+        return process.stdout.decode().strip()
 
     def readme(self):
         for filename in ['README.rst', 'README.md']:
@@ -72,26 +81,30 @@ class ComputedMetadata(object):
 
 
 class PyProjectMetadata(object):
+    """Metadata provider that reads ``[tool.flit.metadata]`` from ``pyproject.toml``."""
+
+    project_path = 'pyproject.tomlx'
     _metadata = dict()
-    _translation = {
+    _translations = {
         'readme': 'description-file',
     }
 
     def __init__(self):
         try:
-            project = toml.load(open('pyproject.toml'))
+            project = toml.load(open(self.project_path))
             self._metadata = project['tool']['flit']['metadata']
         except (FileNotFoundError, KeyError):
             pass
 
     def __getitem__(self, key):
-        if key in self._translation:
-            key = self._translation[key]
+        if key in self._translations:
+            key = self._translations[key]
         return self._metadata[key]
 
 
 class MetadataConfig(object):
-    backers = [PyProjectMetadata(), ComputedMetadata()]
+    """Return keyed metadata from the first successful provider."""
+    backers = [PyProjectMetadata(), DetectedMetadata()]
 
     def version(self):
         module_path = Path(self['module'])

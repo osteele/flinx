@@ -2,7 +2,7 @@ Flinx
 =====
 
 .. warning::
-   Work in progress. Don't use me yet!
+   Work in progress. Beware!
 
 Configuration-free Sphinx package documentation.
 
@@ -74,8 +74,11 @@ When a `pyproject.toml <https://www.python.org/dev/peps/pep-0518/>`_ file is
 present, the module name, author, and description file are read from its
 ``[tool.flit.metadata]`` section.
 
-TODO: Otherwise: this documents all the non-test \*.py files, and directories
-that contain an ``__init__.py``.
+Otherwise, it attempts to detect the module. This is the first non-test
+directory that contains an ``__init__.py`` file that contains a version
+definition, else it's the first non-test \*.py file that contains a version
+definition. A version definition is a line of the format ``__version__ =
+"1.2.3"``, with single or double quotes.
 
 TODO: Configure Sphinx options,by adding sections to ``pyproject.toml``. (Maybe
 they should go in ``setup.cfg`` instead.)
@@ -83,7 +86,7 @@ they should go in ``setup.cfg`` instead.)
 Limitations
 -----------
 
-Doesn't allow customization. (WIP.)
+Doesn't allow Spinx customization.
 
 Isn't compatible with Read the Docs. (Planned, but tricky.)
 
