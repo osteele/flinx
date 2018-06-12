@@ -15,8 +15,7 @@ Signs you might be interested in this package:
   you rename your module. (I know, you shouldn't do this after you've published.
   But I do this a lot during initial development.)
 * You're tired of manually editing both your module source, and ``conf.py``,
-when
-  you bump the version number. (Although `bumpversion
+  when you bump the version number. (Although `bumpversion
   <https://github.com/peritus/bumpversion>`_ is an alternative, here.)
 * You're an eager guinea pig for early-stage software.
 
