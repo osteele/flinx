@@ -40,15 +40,24 @@ Usage
 
   $ flinx build
 
-Builds the HTML documentation.
+Uses `sphinx-build` to build the HTML documentation.
 
-``flinx --open`` opens a browser onto the documentation once it's been built.
-
-.. todo::
-   ``flinx watch`` runs via autosphinx. With ``-o`` or ``--open``, opens the
-   documentation in a browser.
+``flinx build -o`` opens a browser onto the documentation once it's been built.
 
 .. todo:: Currently this pollutes ``./docs``.
+
+::
+
+  $ flinx serve
+
+Uses ``sphinx-autobuild`` to build and serve the HTML documentation.
+
+``flinx serve -o`` opens a browser onto the documentation once it's been built.
+
+Thanks to ``sphinx-autobuild``, the documentation will re-build and re-run when
+the sources are changed.
+
+This doesn't extend to the ``pyproject.toml`` configuration file.
 
 ::
 

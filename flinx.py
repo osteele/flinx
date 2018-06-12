@@ -1,8 +1,10 @@
 """Configuration-free Python doc generation via Sphinx."""
 
+import inspect
+import subprocess
 import sys
 import webbrowser
-from functools import reduce
+from functools import reduce, wraps
 from pathlib import Path
 
 import click
@@ -10,7 +12,8 @@ from jinja2 import Environment
 
 import pytoml as toml
 from project_metadata import ProjectMetadata
-from sphinx.cmd.build import main as sphinx
+from sphinx.cmd.build import main as sphinx_build
+from sphinx_autobuild import main as sphinx_autobuild
 
 __version__ = '0.1.1'
 
@@ -80,29 +83,20 @@ def main():
 @main.command()
 def generate():
     docs_dir = Path('./docs')
-    write_template_files(docs_dir)
+    write_template_files(docs_dir, verbose=True)
 
 
 @main.command()
 def eject():
     docs_dir = Path('./docs')
-    write_template_files(docs_dir, include_generated_warning=False)
+    write_template_files(docs_dir, include_generated_warning=False, verbose=True)
 
 
-@main.command()
-@click.option('-a', '--all', is_flag=True,
-              help='Rebuild all the docs, regardless of what has changed.')
-@click.option('-o', '--open', is_flag=True,
-              help='Open the HTML index in a browser.')
-@click.option('--format', default='html',
-              type=click.Choice(['html']),
-              help='The output format.')
-def build(all=False, format='html', open=False):
-    """Build the documentation."""
+def build_sphinx_args(all=False, format='html', verbose=False, **args):
     docs_dir = Path('./docs')
     build_dir = docs_dir / '_build' / format
     docs_dir.mkdir(exist_ok=True)
-    conf_path = write_template_files(docs_dir)
+    conf_path = write_template_files(docs_dir, verbose=verbose)
     args = [
         '-b', format,
         '-c', str(conf_path.parent),  # config file
@@ -113,11 +107,56 @@ def build(all=False, format='html', open=False):
     ]
     if all:
         args += ['-a']
-    status = sphinx(args)
+    return dict(build_args=args, build_dir=build_dir, docs_dir=docs_dir)
+
+
+def with_sphinx_build_args(f):
+    @click.option('-a', '--all', is_flag=False,
+                  help='Rebuild all the docs, regardless of what has changed.')
+    @click.option('-o', '--open', is_flag=True,
+                  help='Open the HTML index in a browser.')
+    @click.option('--format', default='html', type=click.Choice(['html']),
+                  help='The output format.')
+    @click.option('--verbose', is_flag=True)
+    @wraps(f)
+    def wrapper(**kwargs):
+        # build_args, build_dir, docs_dir = build_sphinx_args(**kwargs)
+        build_args = build_sphinx_args(**kwargs)
+        kwargs = {k: v for k, v in kwargs.items() if k not in consumed_args}
+        for k, v in build_args.items():
+            if k in wrapped_args:
+                kwargs[k] = v
+        return f(**kwargs)
+
+    def position_param_names(f):
+        var_parameter_kinds = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+        return {p.name for p in inspect.signature(f).parameters.values()
+                if p.kind not in var_parameter_kinds}
+
+    wrapped_args = position_param_names(f)
+    consumed_args = position_param_names(build_sphinx_args) - wrapped_args
+    return wrapper
+
+
+@main.command()
+@with_sphinx_build_args
+def build(build_args=None, docs_dir=None, build_dir=None, format=None, open=False):
+    """Build the documentation."""
+    status = sphinx_build(build_args)
     if status:
         sys.exit(sys.exit)
     if open and format == 'html':
         webbrowser.open(str(build_dir / 'index.html'))
+
+
+@main.command()
+@with_sphinx_build_args
+def serve(build_args=None, open=False):
+    if open:
+        build_args += ['-B']
+    process = subprocess.run(['sphinx-autobuild'] + build_args)
+    if process.returncode:
+        sys.exit(1)
 
 
 if __name__ == '__main__':
