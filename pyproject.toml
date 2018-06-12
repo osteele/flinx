@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Software Development :: Documentation",
     ]
 description-file = "./README.rst"
-requires = ["flit" , "Sphinx"]
+requires = ["click", "flit" , "Sphinx"]
 requires-python = ">=3.5"
 
 [tool.flit.scripts]

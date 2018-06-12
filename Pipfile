@@ -6,11 +6,11 @@ name = "pypi"
 [packages]
 click = "*"
 pytoml = "*"
-sphinx = "*"
-# flit = "*"  # sometimes causes errors in pipenv. manually install for now.
+Sphinx = "*"
 
 [dev-packages]
-pytest = "*"
+# flit = "*"  # sometimes causes errors in pipenv. manually install for now.
+keyring = "*"
 sphinx-rtd-theme = "*"
 
 [requires]
