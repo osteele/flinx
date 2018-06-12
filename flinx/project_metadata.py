@@ -10,38 +10,6 @@ test_filename_re = re.compile(r'^(test_|_test)$')
 version_re = re.compile(r'^\s*__version__\s*=\s*(\'.*?\'|".*?")', re.M)
 
 
-class ProjectMetadata(object):
-    """Return keyed metadata from the first successful provider."""
-
-    sources = []
-
-    @staticmethod
-    def from_dir(dir):
-        return ProjectMetadata(dir)
-
-    def __init__(self, project_path='.'):
-        path = Path(project_path) / 'pyproject.toml'
-        if path.exists():
-            self.sources += [FlitMetadata(path), PoetryMetadata(path)]
-        self.sources.append(DetectedMetadata(project_path))
-
-    def version(self):
-        module_path = Path(self['module'])
-        path = module_path / '__init__.py' \
-            if module_path.is_dir() else Path(str(module_path)+'.py')
-        return read_version_def(path)
-
-    def __getitem__(self, key):
-        if key == 'version':
-            return self.version()
-        for backer in self.sources:
-            try:
-                return backer[key]
-            except KeyError:
-                pass
-        return KeyError(key)
-
-
 class PyProjectMetadataProviderABC(object):
     _metadata = dict()
     _translations = {}
@@ -61,9 +29,20 @@ class PyProjectMetadataProviderABC(object):
     def __getitem__(self, key):
         if key in self._translations:
             key = self._translations[key]
+        if isinstance(key, (list, tuple)):
+            for k in key:
+                try:
+                    return self[k]
+                except KeyError:
+                    pass
+            return KeyError(key)
         if callable(getattr(self, key, None)):
             return getattr(self, key)()
         return self._metadata[key]
+
+
+class FlinxMetadata(PyProjectMetadataProviderABC):
+    _toml_path = 'tool.flinx.metadata'
 
 
 class FlitMetadata(PyProjectMetadataProviderABC):
@@ -71,7 +50,7 @@ class FlitMetadata(PyProjectMetadataProviderABC):
 
     _toml_path = 'tool.flit.metadata'
     _translations = {
-        'name': 'module',
+        'name': ['dist-name', 'module'],
         'readme': 'description-file',
     }
 
@@ -169,11 +148,46 @@ class DetectedMetadata(object):
         return fn()
 
 
+class ProjectMetadata(object):
+    """Return keyed metadata from the first successful provider."""
+
+    sources = []
+
+    _project_sources = [FlinxMetadata, FlitMetadata, PoetryMetadata]
+
+    @staticmethod
+    def from_dir(dir):
+        return ProjectMetadata(dir)
+
+    def __init__(self, project_path='.'):
+        path = Path(project_path) / 'pyproject.toml'
+        if path.exists():
+            self.sources += [klass(path) for klass in self._project_sources]
+        self.sources.append(DetectedMetadata(project_path))
+
+    def version(self):
+        module_path = Path(self['module'])
+        path = module_path / '__init__.py' \
+            if module_path.is_dir() else Path(str(module_path)+'.py')
+        return read_version_def(path)
+
+    def __getitem__(self, key):
+        if key == 'version':
+            return self.version()
+        for backer in self.sources:
+            try:
+                return backer[key]
+            except KeyError:
+                pass
+        return KeyError(key)
+
+
 if __name__ == '__main__':
-    for klass in [FlitMetadata, PoetryMetadata, ProjectMetadata, DetectedMetadata]:
+    for klass in [FlinxMetadata, FlitMetadata, PoetryMetadata,
+                  DetectedMetadata, ProjectMetadata]:
         print(f'{klass.__name__}:')
         data = klass()
-        for key in ['module', 'version', 'author', 'readme']:
+        for key in ['module', 'version', 'author', 'date', 'readme']:
             try:
                 value = data[key]
                 print("{:>8}: {}".format(key, value))

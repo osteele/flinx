@@ -84,19 +84,31 @@ FILE IS AUTOMATICALLY GENERATED" warning in the header.
 Configuration
 -------------
 
-If pyproject.toml_ exists and contains a ``[tool.flit.metadata]`` Flit_
+If pyproject.toml_ exists and contains a ``[tool.flinx.metadata]`` table, the
+project name, author, version, copyright date (``date``), and description file
+are read from that. These are all optional.
+
+If ``pyproject.toml`` contains a ``[tool.flit.metadata]`` Flit_
 configuration table, the project name, author, and description file are read
 from that.
 
 If ``pyproject.toml`` contains a ``[tool.poetry]`` Poetry_ configuration table,
 the project name, author, and version are read from that.
 
-Otherwise, Flinx attempts to detect the module. This is the first non-test
-directory that contains an ``__init__.py`` file that contains a version
-definition, else it's the first non-test ``*.py`` file that contains a version
-definition. A version definition is a line of the format ``__version__ =
-"1.2.3"``, with single or double quotes. (Flinx ignores whitespace, but does not
-import or parse the file.)
+Flinx attempts to automatically discover any information that isn't specified in
+the project file:
+
+* Flinx attempts to detect the module. This is the first non-test
+  directory that contains an ``__init__.py`` file that contains a version
+  definition, else it's the first non-test ``*.py`` file that contains a version
+  definition. A version definition is a line of the format ``__version__ =
+  "1.2.3"``, with single or double quotes. (Flinx ignores whitespace, but does
+  not import or parse the file.)
+* Flix reads the version from the module file (if the module is a single file), or from the
+  module's `__init__.py` file (if the module is a directory).
+* The author is read from `git config user.name`. It's an error if there's
+  no project file, and the author isn't available via git.
+* The copyright date is the current year.
 
 Add `Sphinx configuration`_ variables to a ``[tool.flinx.configuration]`` table
 in ``pyproject.toml``. For example:
