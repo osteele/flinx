@@ -25,7 +25,6 @@ release = '{{ version }}'
 
 master_doc = '{{ master_basename }}'
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-extensions = {{ extensions | repr }}
 source_suffix = {{ source_suffix }}
 
 {% if '.md' in source_suffix %}
@@ -36,10 +35,6 @@ source_parsers = { '.md': CommonMarkParser }
 intersphinx_mapping = {'https://docs.python.org/': None}
 {%- endif %}
 
-{%- if 'sphinx.ext.todo' in extensions %}
-todo_include_todos = True
-{%- endif %}
-
-{% for k, v in config_vars %}
+{% for k, v in config %}
 {{ k }} = {{ v | repr }}
 {% endfor %}

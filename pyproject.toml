@@ -2,7 +2,7 @@
 requires = ["flit"]
 build-backend = "flit.buildapi"
 
-[tool.flinx.settings]
+[tool.flinx.configuration]
 html_theme = 'sphinx_rtd_theme'
 todo_include_todos = true
 

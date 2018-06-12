@@ -84,33 +84,40 @@ FILE IS AUTOMATICALLY GENERATED" warning in the header.
 Configuration
 -------------
 
-If pyproject.toml_ exists and has a Flit_ section ``[tool.flit.metadata]``, the
-project name, author, and description file are read from that.
+If pyproject.toml_ exists and contains a Flit_ table ``[tool.flit.metadata]``,
+the project name, author, and description file are read from that.
 
-If ``pyproject.toml`` has a Poetry_ section ``[tool.poetry]``, the project name,
-author, and version are read from that.
+If ``pyproject.toml`` contains a Poetry_ table ``[tool.poetry]``, the project
+name, author, and version are read from that.
 
-Otherwise, it attempts to detect the module. This is the first non-test
+Otherwise, Flinx attempts to detect the module. This is the first non-test
 directory that contains an ``__init__.py`` file that contains a version
-definition, else it's the first non-test \*.py file that contains a version
+definition, else it's the first non-test ``*.py`` file that contains a version
 definition. A version definition is a line of the format ``__version__ =
-"1.2.3"``, with single or double quotes.
+"1.2.3"``, with single or double quotes. (Flinx ignores whitespace, but does not
+import or parse the file.)
 
-Configure `Sphinx options`_ by adding sections to ``pyproject.toml``. For example:
+Add `Sphinx configuration`_ variables to a ``[tool.flinx.settings]`` table
+in ``pyproject.toml``. For example:
 
 ::
 
-  [tool.flinx]
+  [tool.flinx.configuration]
   html_theme = 'sphinx_rtd_theme'
 
-.. todo::
+Extensions in the ``sphinx.ext`` namespace can be abbreviated. For example,
+``extensions = ['napoleon', 'todo']`` is equivalent to ``extensions =
+['sphinx.ext.napoleon', 'sphinx.ext.todo']``.
 
-   Maybe these should go in ``setup.cfg`` instead.
+Extensions from ``sphinx.ext`` are automatically added, if there's a
+configuration variable that begins with the name of that estension. For example,
+the presence of ``todo_include_todos = true`` in the project file implies
+``sphinx.ext.todo``.
 
 .. _pyproject.toml: https://www.python.org/dev/peps/pep-0518/
 .. _Flit: https://flit.readthedocs.io/en/latest/
 .. _Poetry: https://poetry.eustace.io
-.. _Sphinx options: http://www.sphinx-doc.org/en/master/usage/configuration.html
+.. _Sphinx configuration: http://www.sphinx-doc.org/en/master/usage/configuration.html
 
 Limitations
 -----------
