@@ -10,7 +10,6 @@ from jinja2 import Environment
 
 import pytoml as toml
 from sphinx.cmd.build import main as sphinx_build
-from sphinx_autobuild import main as sphinx_autobuild
 
 from .project_metadata import ProjectMetadata
 
@@ -158,7 +157,8 @@ def with_sphinx_build_args(f):
         return f(**kwargs)
 
     def position_param_names(f):
-        var_parameter_kinds = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+        var_parameter_kinds = \
+            (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
         return {p.name for p in inspect.signature(f).parameters.values()
                 if p.kind not in var_parameter_kinds}
 

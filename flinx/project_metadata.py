@@ -118,7 +118,8 @@ def modules_candidates(project_path='.', search='file'):
 
 def find_module(project_path):
     """Find the module. Prefer directories over files."""
-    module_paths = modules_candidates(project_path, 'file') or modules_candidates(project_path, 'dir')
+    module_paths = modules_candidates(project_path, 'file') \
+        or modules_candidates(project_path, 'dir')
     if not module_paths:
         raise Exception("Couldn't find a unique module")
     if len(module_paths) > 2:
