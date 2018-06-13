@@ -2,4 +2,4 @@
 
 __version__ = '0.1.2'
 
-from .cli import main  # noqa: F401
+from .commands import cli  # noqa: F401

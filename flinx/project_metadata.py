@@ -29,13 +29,13 @@ class PyProjectMetadataProviderABC(object):
     def __getitem__(self, key):
         if key in self._translations:
             key = self._translations[key]
-        if isinstance(key, (list, tuple)):
+        if isinstance(key, list):
             for k in key:
                 try:
                     return self[k]
                 except KeyError:
                     pass
-            return KeyError(key)
+            raise KeyError(key)
         if callable(getattr(self, key, None)):
             return getattr(self, key)()
         return self._metadata[key]
@@ -43,6 +43,9 @@ class PyProjectMetadataProviderABC(object):
 
 class FlinxMetadata(PyProjectMetadataProviderABC):
     _toml_path = 'tool.flinx.metadata'
+    _translations = {
+        'module': ['name'],
+    }
 
 
 class FlitMetadata(PyProjectMetadataProviderABC):
@@ -73,7 +76,7 @@ def read_version_def(path):
     return match.group(1).strip('"\'') if match else None
 
 
-def modules_candidates(project_path='.', search='file'):
+def module_candidates(project_path='.', search='file'):
     """Yields the candidate modules in the current directory.
 
     A candidate file module is a non-test file that contains the string
@@ -92,7 +95,7 @@ def modules_candidates(project_path='.', search='file'):
         paths = [p for p in root.glob('*') if p.is_dir()]
         paths = [p / '__init__.py' for p in paths
                  if not test_filename_re.match(str(p))]
-    paths = [p for p in paths if p.is_file()]
+        paths = [p for p in paths if p.is_file()]
     paths = [p for p in paths if read_version_def(p)]
     if search == 'file':
         paths = [p.stem for p in paths]
@@ -101,14 +104,18 @@ def modules_candidates(project_path='.', search='file'):
     return paths
 
 
+class NoModuleException(Exception):
+    pass
+
+
 def find_module(project_path):
     """Find the module. Prefer directories over files."""
-    module_paths = modules_candidates(project_path, 'file') \
-        or modules_candidates(project_path, 'dir')
+    module_paths = module_candidates(project_path, 'file') \
+        or module_candidates(project_path, 'dir')
     if not module_paths:
-        raise Exception("Couldn't find a unique module")
+        raise NoModuleException("Couldn't find module")
     if len(module_paths) > 2:
-        raise Exception("Too many module candidates")
+        raise NoModuleException("Too many module candidates")
     return module_paths[0]
 
 
@@ -120,6 +127,9 @@ class DetectedMetadata(object):
 
     def module(self):
         return str(find_module(self.project_path))
+
+    def name(self):
+        return self.module()
 
     def author(self):
         process = subprocess.run(["git", "config", "user.name"],
@@ -165,20 +175,20 @@ class ProjectMetadata(object):
             self.sources += [klass(path) for klass in self._project_sources]
         self.sources.append(DetectedMetadata(project_path))
 
-    def version(self):
-        module_path = Path(self['module'])
+    def _version(self):
+        module_path = Path(self['name'])
         path = module_path / '__init__.py' \
             if module_path.is_dir() else Path(str(module_path)+'.py')
         return read_version_def(path)
 
     def __getitem__(self, key):
-        if key == 'version':
-            return self.version()
-        for backer in self.sources:
+        for source in self.sources:
             try:
-                return backer[key]
+                return source[key]
             except KeyError:
                 pass
+        if key == 'version':
+            return self._version()
         return KeyError(key)
 
 
@@ -187,7 +197,7 @@ if __name__ == '__main__':
                   DetectedMetadata, ProjectMetadata]:
         print(f'{klass.__name__}:')
         data = klass()
-        for key in ['module', 'version', 'author', 'date', 'readme']:
+        for key in ['name', 'version', 'author', 'date', 'readme']:
             try:
                 value = data[key]
                 print("{:>8}: {}".format(key, value))
