@@ -31,10 +31,3 @@ flinx = "flinx.commands:cli"
 
 [tool.flit.metadata.urls]
 Documentation = "https://flinx.readthedocs.io/en/latest/"
-
-[tool.poetry]
-name = "flinx"
-authors = ["Oliver Steele <steele@osteele.com>"]
-# The following is just for test purposes. I'm not trying to keep the version
-# here in sync with the version in the Python sources.
-version = "0.1.0"

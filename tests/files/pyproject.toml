@@ -1,0 +1,18 @@
+[tool.flinx.metadata]
+name = "project-name"
+module = "module-name"
+author = "Oliver Steele"
+readme = "./README.rst"
+version = "1.0.0"
+
+[tool.flit.metadata]
+dist-name = "project-name"
+module = "module-name"
+author = "Oliver Steele"
+description-file = "./README.rst"
+
+[tool.poetry]
+name = "project-name"
+authors = ["Oliver Steele <steele@osteele.com>"]
+readme = "./README.rst"
+version = "1.0.0"

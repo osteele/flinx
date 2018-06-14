@@ -2,6 +2,7 @@ import re
 import subprocess
 import sys
 from datetime import datetime
+from functools import reduce
 from pathlib import Path
 
 import pytoml as toml
@@ -15,11 +16,7 @@ class PyProjectMetadataProviderABC(object):
     _translations = {}
 
     def __init__(self, project_path='pyproject.toml'):
-        try:
-            project = toml.loads(Path(project_path).read_text())
-        except FileNotFoundError:
-            return
-        from functools import reduce
+        project = toml.loads(Path(project_path).read_text())
         try:
             dotpath = self._toml_path.split('.')
             self._metadata = reduce(lambda a, b: a[b], dotpath, project)
@@ -43,9 +40,6 @@ class PyProjectMetadataProviderABC(object):
 
 class FlinxMetadata(PyProjectMetadataProviderABC):
     _toml_path = 'tool.flinx.metadata'
-    _translations = {
-        'module': ['name'],
-    }
 
 
 class FlitMetadata(PyProjectMetadataProviderABC):
@@ -119,8 +113,10 @@ def find_module(project_path):
     return module_paths[0]
 
 
-class DetectedMetadata(object):
+class InspectedMetadata(object):
     """Metadata provider that detects metadata from files in the current directory."""
+
+    readme_re = re.compile(r'^README.(md|rst)$', re.I)
 
     def __init__(self, project_path='.'):
         self.project_path = Path(project_path)
@@ -129,7 +125,7 @@ class DetectedMetadata(object):
         return str(find_module(self.project_path))
 
     def name(self):
-        return self.module()
+        return str(self.project_path.name)
 
     def author(self):
         process = subprocess.run(["git", "config", "user.name"],
@@ -144,42 +140,23 @@ class DetectedMetadata(object):
         return datetime.now().strftime('%Y')
 
     def readme(self):
-        for filename in ['README.rst', 'README.md']:
-            path = self.project_path / filename
-            if path.exists():
-                return str(path)
-        return None
+        paths = [path.name for path in self.project_path.glob("*")
+                 if self.readme_re.match(str(path.name))]
+        return str(paths[0]) if paths else None
 
     def __getitem__(self, key):
         try:
             fn = getattr(self, key)
         except AttributeError:
-            return IndexError(key)
+            raise KeyError(key)
         return fn()
 
 
-class ProjectMetadata(object):
-    """Return keyed metadata from the first successful provider."""
+class CombinedMetadata(object):
+    """Return keyed metadata from the first successful source."""
 
-    sources = []
-
-    _project_sources = [FlinxMetadata, FlitMetadata, PoetryMetadata]
-
-    @staticmethod
-    def from_dir(dir):
-        return ProjectMetadata(dir)
-
-    def __init__(self, project_path='.'):
-        path = Path(project_path) / 'pyproject.toml'
-        if path.exists():
-            self.sources += [klass(path) for klass in self._project_sources]
-        self.sources.append(DetectedMetadata(project_path))
-
-    def _version(self):
-        module_path = Path(self['name'])
-        path = module_path / '__init__.py' \
-            if module_path.is_dir() else Path(str(module_path)+'.py')
-        return read_version_def(path)
+    def __init__(self, sources):
+        self.sources = sources
 
     def __getitem__(self, key):
         for source in self.sources:
@@ -187,17 +164,47 @@ class ProjectMetadata(object):
                 return source[key]
             except KeyError:
                 pass
-        if key == 'version':
-            return self._version()
-        return KeyError(key)
+        raise KeyError(key)
+
+
+class ProjectMetadata(CombinedMetadata):
+    _project_sources = [FlinxMetadata, FlitMetadata, PoetryMetadata]
+    sources = []
+
+    @classmethod
+    def from_dir(klass, dir):
+        return klass(dir)
+
+    def __init__(self, dir='.'):
+        self._dir = Path(dir)
+        project_path = self._dir / 'pyproject.toml'
+        sources = []
+        if project_path.exists():
+            sources += [klass(project_path) for klass in self._project_sources]
+        sources.append(InspectedMetadata(dir))
+        super().__init__(sources)
+
+    def _get_version(self):
+        module_path = self._dir / self['module']
+        path = module_path / '__init__.py' \
+            if module_path.is_dir() else Path(str(module_path)+'.py')
+        return read_version_def(path)
+
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            if key == 'version':
+                return self._get_version()
+            raise
 
 
 if __name__ == '__main__':
     for klass in [FlinxMetadata, FlitMetadata, PoetryMetadata,
-                  DetectedMetadata, ProjectMetadata]:
+                  InspectedMetadata, ProjectMetadata]:
         print(f'{klass.__name__}:')
         data = klass()
-        for key in ['name', 'version', 'author', 'date', 'readme']:
+        for key in ['name', 'module', 'version', 'author', 'date', 'readme']:
             try:
                 value = data[key]
                 print("{:>8}: {}".format(key, value))

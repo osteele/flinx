@@ -3,6 +3,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[scripts]
+test = "pytest"
+
 [packages]
 click = "*"
 pytoml = "*"
@@ -13,6 +16,8 @@ sphinx-autobuild = "*"
 # flit = "*"  # sometimes causes errors in pipenv. manually install for now.
 keyring = "*"
 sphinx-rtd-theme = "*"
+pytest = "*"
+pytest-watch = "*"
 
 [requires]
 python_version = "3.6"
