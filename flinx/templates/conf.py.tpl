@@ -1,13 +1,11 @@
-{%- if generated_text -%}
-# {{ generated_text }}
-#
-# Make changes to ``project.toml``, and run ``flinx generate``, instead.
-{% else %}
 # Configuration file for the Sphinx documentation builder.
 #
-# This file does only contain a selection of the most common options. For a
-# full list see the documentation:
-# http://www.sphinx-doc.org/en/master/config
+{% if generated_text -%}
+# {{ generated_text }}
+# Make changes to ``project.toml``, and run ``flinx generate``.
+{%- else -%}
+# This file contains only the most common options. For a full list
+# see the `Sphinx documentation <http://www.sphinx-doc.org/en/master/config>`.
 {%- endif %}
 
 import sys
