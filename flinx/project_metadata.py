@@ -13,6 +13,22 @@ test_filename_re = re.compile(r'^(test_|_test)$')
 version_re = re.compile(r'^\s*__version__\s*=\s*(\'.*?\'|".*?")', re.M)
 
 
+class CombinedMetadata(object):
+    """Combine metadata from multiple sources."""
+
+    def __init__(self, sources):
+        self.sources = sources
+
+    def __getitem__(self, key):
+        """Return a project metadata value."""
+        for source in self.sources:
+            try:
+                return source[key]
+            except KeyError:
+                pass
+        raise KeyError(key)
+
+
 class PyProjectMetadataProviderABC(object):
     """Abstract base class for metadata sources that read ``pyproject.toml``."""
 
@@ -29,19 +45,18 @@ class PyProjectMetadataProviderABC(object):
 
     def __getitem__(self, key):
         """Return a project metadata value."""
-        if key in self._translations:
-            key = self._translations[key]
-        if isinstance(key, list):
-            for k in key:
+        translation = self._translations.get(key, key)
+        if isinstance(translation, list):
+            for k in translation:
                 try:
                     return self[k]
                 except KeyError:
                     pass
             raise KeyError(key)
-        getter = getattr(self, '_get_' + key, None)
+        getter = getattr(self, '_get_' + translation.replace('-', '_'), None)
         if callable(getter):
             return getter()
-        return self._metadata[key]
+        return self._metadata[translation]
 
 
 class FlinxMetadata(PyProjectMetadataProviderABC):
@@ -109,21 +124,21 @@ def module_candidates(project_path='.', search='file'):
     return paths
 
 
-class NoModuleError(Exception):
+class NoUniqueModuleError(Exception):
     """No module found."""
 
     pass
 
 
-def find_module(project_path):
+def find_module(project_home):
     """Find the module. Prefer directories over files."""
-    module_paths = module_candidates(project_path, 'file') \
-        or module_candidates(project_path, 'dir')
+    module_paths = module_candidates(project_home, 'file') \
+        or module_candidates(project_home, 'dir')
     if not module_paths:
-        raise NoModuleError("Couldn't find module")
-    if len(module_paths) > 2:
-        raise NoModuleError("Too many module candidates")
-    return module_paths[0]
+        raise NoUniqueModuleError("Couldn't find module")
+    if len(module_paths) > 1:
+        raise NoUniqueModuleError("Too many module candidates")
+    return Path(module_paths[0])
 
 
 class InferredProjectMetadata(object):
@@ -135,7 +150,7 @@ class InferredProjectMetadata(object):
         self.project_path = Path(project_path)
 
     def _get_module(self):
-        return str(find_module(self.project_path))
+        return str(find_module(self.project_path).name)
 
     def _get_name(self):
         return str(self.project_path.name)
@@ -153,33 +168,16 @@ class InferredProjectMetadata(object):
         return datetime.now().strftime('%Y')
 
     def _get_readme(self):
-        paths = [path.name for path in self.project_path.glob("*")
+        paths = [path for path in self.project_path.glob("*")
                  if self.readme_re.match(str(path.name))]
-        return str(paths[0]) if paths else None
+        return str(paths[0].name) if paths else None
 
     def __getitem__(self, key):
         """Return a project metadata value."""
-        try:
-            fn = getattr(self, '_get_' + key)
-        except AttributeError:
+        fn = getattr(self, '_get_' + key, None)
+        if not fn:
             raise KeyError(key)
         return fn()
-
-
-class CombinedMetadata(object):
-    """Combine metadata from multiple sources."""
-
-    def __init__(self, sources):
-        self.sources = sources
-
-    def __getitem__(self, key):
-        """Return a project metadata value."""
-        for source in self.sources:
-            try:
-                return source[key]
-            except KeyError:
-                pass
-        raise KeyError(key)
 
 
 class ProjectMetadata(CombinedMetadata):
@@ -189,23 +187,23 @@ class ProjectMetadata(CombinedMetadata):
     sources = []
 
     @classmethod
-    def from_dir(cls, project_path):
+    def from_dir(cls, project_home):
         """Construct a ProjectMetadata that reads from the specified directory."""
-        return cls(project_path)
+        return cls(project_home)
 
-    def __init__(self, project_path='.'):
-        self._project_path = Path(project_path)
-        project_file_path = self._project_path / 'pyproject.toml'
+    def __init__(self, project_home='.'):
+        self._project_home = Path(project_home)
+        project_file_path = self._project_home / 'pyproject.toml'
         sources = []
         if project_file_path.exists():
             sources += [cls(project_file_path) for cls in self._project_source_classes]
-        sources.append(InferredProjectMetadata(self._project_path))
+        sources.append(InferredProjectMetadata(self._project_home))
         super().__init__(sources)
 
     def _get_version(self):
-        module_path = self._project_path / self['module']
-        path = module_path / '__init__.py' \
-            if module_path.is_dir() else Path(str(module_path) + '.py')
+        module_path = self._project_home / self['module']
+        init_path = module_path / '__init__.py'
+        path = init_path if module_path.is_dir() else Path(str(module_path) + '.py')
         return read_version_def(path)
 
     def __getitem__(self, key):
