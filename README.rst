@@ -3,9 +3,6 @@ Flinx
 
 Configuration-free Sphinx package documentation.
 
-.. warning::
-   Work in progress. Beware!
-
 Flinx aims to be for documentation what Flit is for packaging: a
 configuration-free way to get started on {documentation, packaging}, and add
 configuration gradually. It also borrows a concept from react-starter-kit: you
