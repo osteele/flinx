@@ -9,7 +9,7 @@ import click
 
 from sphinx.cmd.build import main as sphinx_build
 
-from .core import write_template_files
+from .generation import write_template_files
 
 
 @click.group()
