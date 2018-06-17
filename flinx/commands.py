@@ -12,6 +12,23 @@ from sphinx.cmd.build import main as sphinx_build
 from .generation import write_template_files
 
 
+def generation_options(verbose=True):
+    """Add generation options."""
+    def inner(f):
+        @click.option('--force', is_flag=True,
+                      help="Overwrite conf.py and index.rst")
+        @click.option('--unless-exists', is_flag=True,
+                      help="Skip conf.py and index.rst generation without error, "
+                      "if non-generated files exists.")
+        @click.option('--verbose', is_flag=True, default=verbose)
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            return f(*args, **kwargs)
+
+        return wrapper
+    return inner
+
+
 @click.group()
 def cli():
     """Configuration-free Sphinx builder."""
@@ -19,9 +36,7 @@ def cli():
 
 
 @cli.command()
-@click.option('--force', is_flag=True)
-@click.option('--unless-exists', is_flag=True)
-@click.option('--verbose', is_flag=True, default=True)
+@generation_options(verbose=True)
 def generate(force=False, unless_exists=False, verbose=False):
     """Write the generated files."""
     docs_dir = Path('./docs')
@@ -30,9 +45,7 @@ def generate(force=False, unless_exists=False, verbose=False):
 
 
 @cli.command()
-@click.option('--force', is_flag=True)
-@click.option('--unless-exists', is_flag=True)
-@click.option('--verbose', is_flag=True, default=True)
+@generation_options(verbose=True)
 def eject(force=False, unless_exists=False, verbose=False):
     """Write the generated files, without header warnings."""
     docs_dir = Path('./docs')
@@ -70,11 +83,9 @@ def with_sphinx_build_args(f):
                   help='Rebuild all the docs, regardless of what has changed.')
     @click.option('-o', '--open-url', is_flag=True,
                   help='Open the HTML index in a browser.')
-    @click.option('--force', is_flag=True)
     @click.option('--format', 'fmt', default='html',
                   help='The output format.')
-    @click.option('--unless-exists', is_flag=True)
-    @click.option('--verbose', is_flag=True)
+    @generation_options(verbose=False)
     @wraps(f)
     def wrapper(**kwargs):
         build_args = build_sphinx_args(**kwargs)

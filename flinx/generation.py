@@ -35,8 +35,8 @@ class NonGeneratedFileExists(ClickException):
 
     def format_message(self):
         """Return the message for click to display."""
-        return "won't overwrite {!r}; aborting. " \
-            "Try again without --unless-exists.".format(str(self.path))
+        return "won't overwrite {}; aborting. " \
+            "Use --force to overwrite.".format(str(self.path))
 
 
 def write_template_files(output_dir,
