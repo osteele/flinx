@@ -19,25 +19,38 @@ def cli():
 
 
 @cli.command()
-def generate():
+@click.option('--force', is_flag=True)
+@click.option('--unless-exists', is_flag=True)
+@click.option('--verbose', is_flag=True, default=True)
+def generate(force=False, unless_exists=False, verbose=False):
     """Write the generated files."""
     docs_dir = Path('./docs')
-    write_template_files(docs_dir, verbose=True)
+    write_template_files(docs_dir, force=force, unless_exists=unless_exists,
+                         verbose=verbose)
 
 
 @cli.command()
-def eject():
+@click.option('--force', is_flag=True)
+@click.option('--unless-exists', is_flag=True)
+@click.option('--verbose', is_flag=True, default=True)
+def eject(force=False, unless_exists=False, verbose=False):
     """Write the generated files, without header warnings."""
     docs_dir = Path('./docs')
-    write_template_files(docs_dir, include_generated_warning=False, verbose=True)
+    write_template_files(docs_dir, force=force, include_generated_warning=False,
+                         unless_exists=unless_exists, verbose=verbose)
 
 
-def build_sphinx_args(all_files=False, fmt='html', verbose=False, **args):
+def build_sphinx_args(all_files=False,
+                      force=False,
+                      fmt='html',
+                      unless_exists=False,
+                      verbose=False,
+                      **args):
     """Translate shared options into a new set of options, and write templates."""
     docs_dir = Path('./docs')
     build_dir = docs_dir / '_build' / fmt
-    docs_dir.mkdir(exist_ok=True)
-    write_template_files(docs_dir, verbose=verbose)
+    write_template_files(docs_dir, force=force, unless_exists=unless_exists,
+                         verbose=verbose)
     args = [
         '-b', fmt,
         '-c', str(docs_dir),  # config file directory
@@ -57,8 +70,10 @@ def with_sphinx_build_args(f):
                   help='Rebuild all the docs, regardless of what has changed.')
     @click.option('-o', '--open-url', is_flag=True,
                   help='Open the HTML index in a browser.')
+    @click.option('--force', is_flag=True)
     @click.option('--format', 'fmt', default='html',
                   help='The output format.')
+    @click.option('--unless-exists', is_flag=True)
     @click.option('--verbose', is_flag=True)
     @wraps(f)
     def wrapper(**kwargs):
@@ -71,8 +86,8 @@ def with_sphinx_build_args(f):
 
     def non_variadic_param_names(f):
         """Return a set of names of f's non-variadic parameters."""
-        var_parameter_kinds = \
-            (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+        var_parameter_kinds = (inspect.Parameter.VAR_POSITIONAL,
+                               inspect.Parameter.VAR_KEYWORD)
         return {p.name for p in inspect.signature(f).parameters.values()
                 if p.kind not in var_parameter_kinds}
 

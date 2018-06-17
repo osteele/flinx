@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 
+from click import ClickException
 from jinja2 import Environment
 
 from .configuration import get_sphinx_configuration
@@ -20,9 +21,40 @@ conf_tpl = env.from_string((TEMPLATE_DIR / 'conf.py.tpl').read_text())
 index_tpl = env.from_string((TEMPLATE_DIR / 'index.rst.tpl').read_text())
 
 
-def write_template_files(output_dir, include_generated_warning=True, verbose=True):
+class NonGeneratedFileExists(ClickException):
+    """An exception that indicates a non-generate file exists.
+
+    An exception for ``write_template_files`` to raise when a writing a file
+    would replace a non - generated file.
+    """
+
+    @property
+    def path(self):
+        """Return the pathname of the file, as a Path."""
+        return self.args[0]
+
+    def format_message(self):
+        """Return the message for click to display."""
+        return "won't overwrite {!r}; aborting. " \
+            "Try again without --unless-exists.".format(str(self.path))
+
+
+def write_template_files(output_dir,
+                         force=True,
+                         include_generated_warning=True,
+                         unless_exists=False,
+                         verbose=True):
     """Generate the ``conf.py`` and ``README.rst`` files."""
-    # TODO: refuse to overwrite non-generated files?
+    index_path = output_dir / 'index.rst'
+    conf_path = output_dir / 'conf.py'
+    overwritten_files = [path for path in (conf_path, index_path)
+                         if path.exists() and GENERATED_TEXT not in path.read_text()]
+    if overwritten_files and not force:
+        if unless_exists:
+            return
+        raise NonGeneratedFileExists(overwritten_files[0])
+
+    output_dir.mkdir(parents=True, exist_ok=True)
     metadata = ProjectMetadata.from_dir('.')
     config = get_sphinx_configuration('.')
     try:
@@ -36,10 +68,9 @@ def write_template_files(output_dir, include_generated_warning=True, verbose=Tru
         module_name=metadata['module'],
         generated_text=generated_text,
     )
-    index_path = output_dir / 'index.rst'
     index_path.write_text(index_text)
     if verbose:
-        print('wrote', index_path)
+        print('Wrote', index_path)
 
     author = metadata['author']
     copyright_year = metadata['date']
@@ -55,8 +86,7 @@ def write_template_files(output_dir, include_generated_warning=True, verbose=Tru
         generated_text=generated_text,
         config=config.items(),
     )
-    conf_path = output_dir / 'conf.py'
     conf_path.write_text(conf_text)
     if verbose:
-        print('wrote', conf_path)
+        print('Wrote', conf_path)
     return conf_path
