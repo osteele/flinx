@@ -21,7 +21,7 @@ classifiers = [
     "Topic :: Documentation :: Sphinx",
     "Topic :: Software Development :: Documentation",
     ]
-description-file = "./README.rst"
+description-file = "README.rst"
 requires = ["click", "flit" , "Sphinx", "sphinx-autobuild"]
 # It's probably compatible with 3.0–3.4 too. I haven't tested it.
 requires-python = ">=3.5"

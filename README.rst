@@ -41,7 +41,7 @@ Uses `sphinx-build` to build the HTML documentation.
 
 ``flinx build -o`` opens a browser onto the documentation once it's been built.
 
-.. todo:: Currently this pollutes ``./docs``.
+.. warning:: TODO: Currently this pollutes ``./docs``.
 
 ::
 
